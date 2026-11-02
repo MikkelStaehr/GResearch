@@ -1,0 +1,24 @@
+{
+  "name": "gresearch",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Henter historiske PCS-data (2019-2025) til skemaet velo i Supabase. Intern reference til ProjectVelo.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "scrape": "node --env-file-if-exists=.env --env-file-if-exists=.env.local src/cli.ts",
+    "counts": "node --env-file-if-exists=.env --env-file-if-exists=.env.local src/counts.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
+    "typescript": "^5.7.0"
+  }
+}

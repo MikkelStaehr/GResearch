@@ -1,0 +1,10 @@
+# Hemmeligheder
+.env
+.env.*
+!.env.example
+
+# Genererede data
+cache/
+logs/
+node_modules/
+dist/
