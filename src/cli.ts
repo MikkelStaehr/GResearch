@@ -8,7 +8,7 @@
 
 import { parseArgs } from 'node:util'
 import { YEARS, fetchPolicy, requireEnv } from './config.ts'
-import { Db } from './db.ts'
+import { Db, explainDbError } from './db.ts'
 import { log, logFile } from './log.ts'
 import { PcsClient, RunAborted } from './pcs/client.ts'
 import { FlareSolverr } from './pcs/flaresolverr.ts'
@@ -59,7 +59,7 @@ async function main(): Promise<number> {
             await scrapeRaceYear(ctx, r.pcsSlug, r.raceType, year)
           } catch (err) {
             if (err instanceof RunAborted) throw err
-            log.error(`[${year} ${r.pcsSlug}] fejlede, fortsætter med næste: ${err instanceof Error ? err.stack : String(err)}`)
+            log.error(`[${year} ${r.pcsSlug}] fejlede, fortsætter med næste: ${explainDbError(err)}`)
           }
         }
       }
@@ -89,10 +89,13 @@ async function main(): Promise<number> {
   }
 }
 
+// exitCode i stedet for process.exit(), så Node lukker åbne handles færdigt (ellers libuv-assertion på Windows).
 main().then(
-  (code) => process.exit(code),
+  (code) => {
+    process.exitCode = code
+  },
   (err) => {
-    log.error(err instanceof Error ? (err.stack ?? err.message) : String(err))
-    process.exit(1)
+    log.error(explainDbError(err))
+    process.exitCode = 1
   },
 )

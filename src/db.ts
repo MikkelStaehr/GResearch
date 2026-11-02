@@ -5,7 +5,9 @@
  */
 
 import fs from 'node:fs'
+import path from 'node:path'
 import pg from 'pg'
+import { ROOT } from './config.ts'
 
 export type RaceRow = {
   pcsSlug: string
@@ -63,17 +65,26 @@ export type SpecialtyRow = {
   hills: number | null
 }
 
+const DEFAULT_CA = path.join(ROOT, 'supabase-ca.crt')
+
 /**
- * TLS: med DATABASE_CA_CERT (sti til Supabase' CA-certifikat fra
- * Dashboard → Database → SSL) verificeres serveren mod det. Uden den bruges
- * pg's standard ud fra sslmode i DATABASE_URL.
+ * Altid TLS med verifikation af serverens certifikat. Supabase' certifikater er
+ * udstedt af deres egen CA, så den skal angives: DATABASE_CA_CERT, ellers
+ * supabase-ca.crt i projektmappen (Dashboard → Database → SSL Configuration).
  */
 function poolConfig(url: string): pg.PoolConfig {
-  const caPath = process.env.DATABASE_CA_CERT?.trim()
-  if (!caPath) return { connectionString: url, max: 2 }
+  const caPath = process.env.DATABASE_CA_CERT?.trim() || (fs.existsSync(DEFAULT_CA) ? DEFAULT_CA : null)
   const u = new URL(url)
   u.searchParams.delete('sslmode') // ellers overskriver sslmode ssl-objektet nedenfor
-  return { connectionString: u.toString(), ssl: { ca: fs.readFileSync(caPath, 'utf8') }, max: 2 }
+  return { connectionString: u.toString(), ssl: caPath ? { ca: fs.readFileSync(caPath, 'utf8') } : true, max: 2 }
+}
+
+/** Tilføjer en forklaring, hvis certifikatet ikke kan verificeres. */
+export function explainDbError(err: unknown): string {
+  const msg = err instanceof Error ? (err.stack ?? err.message) : String(err)
+  return /SELF_SIGNED_CERT_IN_CHAIN|self-signed certificate|unable to verify/i.test(msg)
+    ? `${msg}\nDatabasens certifikat kan ikke verificeres: læg Supabase' CA-certifikat som supabase-ca.crt i projektmappen eller sæt DATABASE_CA_CERT.`
+    : msg
 }
 
 export class Db {

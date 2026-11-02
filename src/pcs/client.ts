@@ -24,6 +24,16 @@ export class RunAborted extends Error {}
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
+/**
+ * PCS' egen blokeringsside ("403 | Scraping Detected"). Den er et udtrykkeligt
+ * nej fra PCS, ikke en Cloudflare-udfordring, så den forsøges ikke omgået:
+ * kørslen stoppes med det samme, og siden caches ikke.
+ */
+export function isPcsBlockPage(html: string): boolean {
+  const head = html.slice(0, 5_000)
+  return /<title>\s*403\s*\|\s*ProCyclingStats/i.test(head) || /Scraping Detected/i.test(head)
+}
+
 export function isCloudflarePage(html: string): boolean {
   const head = html.slice(0, 20_000)
   return (
@@ -74,6 +84,9 @@ export class PcsClient {
         const res = await this.solver.get(url)
         this.lastNetworkAt = Date.now()
         this.stats.network++
+        if (isPcsBlockPage(res.html)) {
+          throw new RunAborted(`PCS svarede "403 | Scraping Detected" på ${pcsPath}. Stopper uden nye forsøg.`)
+        }
         if (res.status === 404) {
           this.consecutiveFailures = 0
           fs.mkdirSync(path.dirname(file), { recursive: true })

@@ -26,7 +26,8 @@ export class FlareSolverr {
   private sessionCounter = 0
 
   constructor(baseUrl: string, timeoutMs: number) {
-    this.endpoint = `${baseUrl.replace(/\/$/, '')}/v1`
+    // Både "http://host:8191" og "http://host:8191/v1" accepteres.
+    this.endpoint = `${baseUrl.replace(/\/+$/, '').replace(/\/v1$/, '')}/v1`
     this.timeoutMs = timeoutMs
   }
 
