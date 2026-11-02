@@ -18,7 +18,7 @@ Henter historiske data (2019–2025) fra ProCyclingStats (PCS) til skemaet `velo
 
 **Resultatrækker:** de 30 bedste pr. etape plus alle med PCS' udbrudsikon. I en holdtidskørsel får hver rytter holdets placering og holdets tidsforskel plus sit eget tidstab.
 
-**`km_in_break`** er PCS' "KM before peloton", men kun for ryttere med udbrudsikonet. Det er samme tal, som Bodega Bets gemmer i `public.cycling_results` for 2026. Ryttere uden ikon får 0. PCS har ikke udbruds-km for 2019, så dér er værdien `null` for udbryderne.
+**`km_in_break`** er PCS' "KM before peloton", men kun for ryttere med udbrudsikonet. Det er samme tal, som Bodega Bets gemmer i `public.cycling_results` for 2026. Fra 2020 får ryttere uden ikon 0. PCS har ikke udbruds-km for 2019, så dér er værdien `null` for alle.
 
 **`rider_specialties.captured_on`** er den dato, rytterens side blev hentet. Derfor giver en genkørsel fra cachen samme række.
 

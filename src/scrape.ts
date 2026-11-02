@@ -1,4 +1,4 @@
-import { ONE_DAY_STAGE_NUMBER, TOP_N } from './config.ts'
+import { FIRST_BREAK_DATA_YEAR, ONE_DAY_STAGE_NUMBER, TOP_N } from './config.ts'
 import type { Db, ResultRowDb, RiderStub, StageRowDb } from './db.ts'
 import { log } from './log.ts'
 import type { PcsClient } from './pcs/client.ts'
@@ -129,8 +129,8 @@ export async function scrapeRaceYear(ctx: RunContext, slug: string, raceType2026
     const results: ResultRowDb[] = selectRows(p.page.rows).map((r) => {
       if (!riders.has(r.riderSlug)) riders.set(r.riderSlug, { pcsSlug: r.riderSlug, ...splitListedName(r.riderName) })
       ctx.seenRiders.set(r.riderSlug, riders.get(r.riderSlug)!.firstName)
-      // Kun ryttere med PCS' udbrudsikon får km; null hvis PCS ikke har tallet (fx 2019).
-      const kmInBreak = r.inBreak ? (p.kms?.get(r.riderSlug) ?? null) : 0
+      // Kun ryttere med PCS' udbrudsikon får km. PCS har udbruds-km fra 2020; for 2019 er alle null.
+      const kmInBreak = year < FIRST_BREAK_DATA_YEAR ? null : r.inBreak ? (p.kms?.get(r.riderSlug) ?? null) : 0
       if (r.inBreak && kmInBreak == null) miss('results.km_in_break (udbryder uden km)')
       if (kmInBreak) breakCount++
       if (!r.dnf && r.timeGapS == null) miss('results.time_gap_s')

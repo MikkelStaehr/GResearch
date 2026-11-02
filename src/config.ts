@@ -13,6 +13,9 @@ export const YEARS = [2025, 2024, 2023, 2022, 2021, 2020, 2019]
 /** Antal placeringer pr. etape der gemmes (plus alle udbrydere). */
 export const TOP_N = 30
 
+/** Første år, hvor PCS har udbruds-km. Før det er km_in_break null for alle. */
+export const FIRST_BREAK_DATA_YEAR = 2020
+
 /** stage_number for et endagsløbs ene etape. */
 export const ONE_DAY_STAGE_NUMBER = 1
 
